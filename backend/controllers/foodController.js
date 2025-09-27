@@ -4,6 +4,8 @@ import Food from "../models/foodModel.js";
 import fs from 'fs';
 
 // Add food item
+// ...existing code...
+
 const addFood = async (req, res) => {
   try {
     const body = { ...req.body };
@@ -17,6 +19,9 @@ const addFood = async (req, res) => {
       category: body.category,
       restaurantId: body.restaurantId,
       image: req.file?.filename,
+      ingredients: body.ingredients, // { main: [], allergens: [], spices: [] }
+      tags: body.tags, // { dietary, categories, cookingMethod, spiceLevel }
+      nutrition: body.nutrition, // { calories, healthy, lowCalorie }
     });
 
     await newFood.save();
@@ -27,7 +32,7 @@ const addFood = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
+//b Get food by restaurant
 // Get food by restaurant
 const getFoodByRestaurant = async (req, res) => {
   try {

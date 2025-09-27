@@ -19,6 +19,46 @@ const PrintableSection = React.forwardRef(({ children }, ref) => (
   <div ref={ref}>{children}</div>
 ));
 
+const getDietaryTag = (dietary) => {
+  switch (dietary) {
+    case "veg":
+      return <span className="dietary-tag veg">🟢 VEG</span>;
+    case "non-veg":
+      return <span className="dietary-tag non-veg">🔴 NON-VEG</span>;
+    case "vegan":
+      return <span className="dietary-tag vegan">🌱 VEGAN</span>;
+    case "jain":
+      return <span className="dietary-tag jain">🟡 JAIN</span>;
+    default:
+      return null;
+  }
+};
+
+const getSpiceLevel = (spiceLevel) => {
+  switch (spiceLevel) {
+    case "mild":
+      return <span className="spice-tag mild">🌶️ Mild</span>;
+    case "medium":
+      return <span className="spice-tag medium">🌶️🌶️ Medium</span>;
+    case "hot":
+      return <span className="spice-tag hot">🌶️🌶️🌶️ Hot</span>;
+    case "extra-hot":
+      return <span className="spice-tag extra-hot">🌶️🌶️🌶️🌶️ Extra Hot</span>;
+    default:
+      return null;
+  }
+};
+
+const getHealthTag = (nutrition) => {
+  if (!nutrition) return null;
+  return (
+    <span>
+      {nutrition.healthy && <span className="health-tag healthy">💚 Healthy</span>}
+      {nutrition.lowCalorie && <span className="health-tag low-cal">⚡ Low Cal</span>}
+    </span>
+  );
+};
+
 const FoodDetail = () => {
   const [openReviewModal, setOpenReviewModal] = useState(false);
   const [description, setDescription] = useState("");
@@ -147,6 +187,14 @@ const FoodDetail = () => {
     .filter(item => item.category === foodItem.category && item._id !== foodItem._id)
     .slice(0, 5); // Limit to 5 related products
 
+  // Extract metadata safely
+  const dietary = foodItem?.tags?.dietary;
+  const spiceLevel = foodItem?.tags?.spiceLevel;
+  const categories = foodItem?.tags?.categories || [];
+  const cookingMethod = foodItem?.tags?.cookingMethod;
+  const ingredients = foodItem?.ingredients || {};
+  const nutrition = foodItem?.nutrition;
+
   return (
     <div className="food-detail-wrapper">
       {/* Action Buttons */}
@@ -214,10 +262,7 @@ const FoodDetail = () => {
         </button>
       </div>
 
-
-
       <PrintableSection ref={printRef}>
-
         <div className="food-detail-container">
           <div className="food-detail-image">
             <img src={foodItem.image} alt={foodItem.name} crossOrigin="anonymous" />
@@ -226,6 +271,43 @@ const FoodDetail = () => {
           <div className="food-detail-info">
             <h1>{foodItem.name}</h1>
             <p className="description">{foodItem.description}</p>
+
+            {/* Dietary, Spice, Health, Allergen, Ingredients Section */}
+            <div className="food-metadata-section">
+              {getDietaryTag(dietary)}
+              {getSpiceLevel(spiceLevel)}
+              {getHealthTag(nutrition)}
+              {categories.length > 0 && (
+                <div className="category-tags">
+                  {categories.map((cat, idx) => (
+                    <span key={idx} className="category-tag">{cat}</span>
+                  ))}
+                </div>
+              )}
+              {cookingMethod && (
+                <span className="cooking-method-tag">{cookingMethod}</span>
+              )}
+              {ingredients.main && ingredients.main.length > 0 && (
+                <div className="ingredients-section">
+                  <strong>Main Ingredients:</strong> {ingredients.main.join(", ")}
+                </div>
+              )}
+              {ingredients.spices && ingredients.spices.length > 0 && (
+                <div className="spices-section">
+                  <strong>Spices:</strong> {ingredients.spices.join(", ")}
+                </div>
+              )}
+              {ingredients.allergens && ingredients.allergens.length > 0 && (
+                <div className="allergens-section">
+                  <strong>Allergens:</strong> <span className="allergen-warning">{ingredients.allergens.join(", ")}</span>
+                </div>
+              )}
+              {nutrition && nutrition.calories !== undefined && (
+                <div className="nutrition-section">
+                  <strong>Calories:</strong> {nutrition.calories} kcal
+                </div>
+              )}
+            </div>
 
             <div className="info-section">
               <div className="price">
@@ -261,7 +343,7 @@ const FoodDetail = () => {
               </button>
             </div>
             <Dialog open={openReviewModal} onClose={handleCloseModal}>
-              <DialogTitle textAlign={"center"}>Submit You Review</DialogTitle>
+              <DialogTitle textAlign={"center"}>Submit Your Review</DialogTitle>
               <DialogContent>
                 <div className="reviewratings">
                   <Rating
